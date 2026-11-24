@@ -1,0 +1,28 @@
+{
+  "name": "校园活动",
+  "appid": "",
+  "description": "校园活动平台学生端",
+  "versionName": "0.0.1",
+  "versionCode": "1",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true,
+    "nvueStyleCompiler": "uni-app",
+    "compilerVersion": 3
+  },
+  "quickapp": {},
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false
+    },
+    "usingComponents": true
+  },
+  "h5": {
+    "title": "校园活动",
+    "router": {
+      "mode": "hash"
+    }
+  },
+  "vueVersion": "3"
+}
