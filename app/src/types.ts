@@ -55,6 +55,11 @@ export interface ActivityItem {
   /** 0 表示不限人数 */
   capacity: number
   signedCount: number
+  /** 第二课堂分值类别 1思想成长 2社会实践及志愿服务 3创新创业 4文体活动 */
+  scoreType?: number | null
+  scoreTypeLabel?: string | null
+  /** 签到后可得分值 */
+  score?: number | null
   status: ActivityStatus
   statusLabel: string
   /** 当前是否处于报名窗口内 */

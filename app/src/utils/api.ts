@@ -1,5 +1,5 @@
 import { http } from './request'
-import type { ActivityDetail, ActivityItem, PingResult, SignupItem, UserInfo, PageResult } from '../types'
+import type { ActivityDetail, ActivityItem, Category, PageResult, PingResult } from '../types'
 
 /**
  * 业务接口集合。写法约定：
@@ -11,10 +11,24 @@ export const api = {
   /** 探活：三端联调时第一步先打它 */
   ping: () => http.get<PingResult>('/ping', undefined, { auth: false }),
 
-  // 以下为 B 轨后续步骤会提供的接口，本阶段先固定类型与路径，避免前端后面改结构
-  activityList: (params?: { page?: number; size?: number; keyword?: string; categoryId?: number }) =>
-    http.get<PageResult<ActivityItem>>('/app/activities', params, { auth: false }),
-  activityDetail: (id: number | string) => http.get<ActivityDetail>(`/app/activities/${id}`, undefined, { auth: false }),
-  mySignups: (params?: { page?: number; size?: number }) => http.get<PageResult<SignupItem>>('/app/user/signups', params),
-  profile: () => http.get<UserInfo>('/app/user/profile')
+  /** 活动分类（首页分类条、列表页筛选） */
+  categories: () => http.get<Category[]>('/app/categories', undefined, { auth: false }),
+
+  /** 活动分页：timeScope 可选 TODAY / WEEK / MONTH / ENDED，sort 可选 HOT / LATEST */
+  activities: (params?: {
+    page?: number
+    size?: number
+    keyword?: string
+    categoryId?: number
+    timeScope?: string
+    sort?: string
+  }) => http.get<PageResult<ActivityItem>>('/app/activities', params, { auth: false }),
+
+  /** 热门活动：首页横滑榜 */
+  hotActivities: (limit = 5) =>
+    http.get<ActivityItem[]>('/app/activities/hot', { limit }, { auth: false }),
+
+  /** 活动详情 */
+  activityDetail: (id: number | string) =>
+    http.get<ActivityDetail>(`/app/activities/${id}`, undefined, { auth: false })
 }

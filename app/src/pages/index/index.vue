@@ -1,212 +1,311 @@
 <template>
   <view class="page">
+    <!-- 头部：渐变背景 + 搜索入口 -->
     <view class="hero">
-      <text class="hero-title">校园活动</text>
-      <text class="hero-sub">学生端脚手架 · A02 类型定义与请求层</text>
-    </view>
-
-    <!-- 请求层自检：真正打一次 /api/ping，证明代理、统一响应体、错误分支都通 -->
-    <view class="card">
-      <view class="card-head">
-        <text class="card-title">请求层自检</text>
-        <text class="retry" @click="check">重新检测</text>
+      <view class="bubble bubble-1" />
+      <view class="bubble bubble-2" />
+      <view class="hero-top">
+        <text class="hello">校园活动</text>
+        <text class="date">{{ today }}</text>
       </view>
-      <view class="status">
-        <view class="dot" :class="state"></view>
-        <text class="status-text">{{ statusText }}</text>
-      </view>
-      <text v-if="detail" class="detail">{{ detail }}</text>
-      <text class="hint">GET /api/ping → code=0 时直接拿到 data，非 0 由拦截器统一提示</text>
-    </view>
-
-    <view class="card">
-      <text class="card-title">核心类型契约</text>
-      <view v-for="item in contracts" :key="item.name" class="row">
-        <text class="row-name">{{ item.name }}</text>
-        <text class="row-desc">{{ item.desc }}</text>
+      <text class="slogan">发现今天值得去的一场</text>
+      <view class="search" @click="goList()">
+        <text class="search-icon">搜</text>
+        <text class="search-text">搜索活动 / 主办方</text>
       </view>
     </view>
 
-    <view class="card">
-      <text class="card-title">三端端口</text>
-      <view v-for="item in ends" :key="item.name" class="row">
-        <text class="row-name">{{ item.name }}</text>
-        <text class="row-port">{{ item.port }}</text>
+    <!-- 分类条 -->
+    <scroll-view class="cats" scroll-x :show-scrollbar="false">
+      <view class="cat-chip" :class="{ active: activeCategory === 0 }" @click="goList(0)">全部</view>
+      <view v-for="item in categories" :key="item.id" class="cat-chip"
+        :class="{ active: activeCategory === item.id }" @click="goList(item.id)">
+        {{ item.name }}
       </view>
+    </scroll-view>
+
+    <!-- 热门横滑 -->
+    <SectionTitle title="热门活动" subtitle="按报名人数" />
+    <scroll-view v-if="hot.length" class="hot" scroll-x :show-scrollbar="false">
+      <view v-for="(item, index) in hot" :key="item.id" class="hot-card" @click="goDetail(item.id)">
+        <view class="hot-cover" :style="coverStyle(item)">
+          <image v-if="item.coverUrl" :src="item.coverUrl" mode="aspectFill" class="hot-img" />
+          <text v-else class="hot-text">{{ (item.categoryName || '活动').slice(0, 2) }}</text>
+          <view class="rank" :class="{ top: index < 3 }">TOP{{ index + 1 }}</view>
+        </view>
+        <text class="hot-title">{{ item.title }}</text>
+        <view class="hot-meta">
+          <text class="hot-time">{{ shortTime(item.startTime) }}</text>
+          <text class="hot-count">{{ item.signedCount || 0 }} 人已报名</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 即将开始 -->
+    <SectionTitle title="即将开始" subtitle="按活动时间" :more="true" @more="goList()" />
+    <view class="list" v-if="upcoming.length">
+      <ActivityCard v-for="item in upcoming" :key="item.id" :activity="item" @click="goDetail(item.id)" />
     </view>
+    <EmptyState v-else-if="!loading" title="暂时没有即将开始的活动" description="过两天再来看看" />
+
+    <view v-if="loading" class="loading">加载中…</view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { onShow } from '@dcloudio/uni-app'
+import { ref } from 'vue'
+import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app'
+import SectionTitle from '../../components/SectionTitle.vue'
+import ActivityCard from '../../components/ActivityCard.vue'
+import EmptyState from '../../components/EmptyState.vue'
 import { api } from '../../utils/api'
+import type { ActivityItem, Category } from '../../types'
 
-interface ContractRow {
-  name: string
-  desc: string
+const categories = ref<Category[]>([])
+const hot = ref<ActivityItem[]>([])
+const upcoming = ref<ActivityItem[]>([])
+const loading = ref(false)
+const activeCategory = 0
+
+const today = new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' })
+
+function coverStyle(item: ActivityItem): Record<string, string> {
+  if (item.coverUrl) return {}
+  return { background: 'linear-gradient(135deg, #12813f, #4ade80)' }
 }
 
-const contracts: ContractRow[] = [
-  { name: 'ActivityItem', desc: '活动列表：时间、名额、状态、我的报名状态' },
-  { name: 'SignupItem', desc: '报名记录：报名号、候补序号、可取消/可签到' },
-  { name: 'UserInfo', desc: '用户：角色、组织、学号绑定标记' }
-]
+/** 2026-11-27 19:00:00 → 11-27 19:00 */
+function shortTime(value?: string | null): string {
+  if (!value) return ''
+  return value.replace('T', ' ').slice(5, 16)
+}
 
-const ends = [
-  { name: '后端接口', port: '8016' },
-  { name: '管理后台', port: '5173' },
-  { name: '学生端 H5', port: '5174' }
-]
-
-const state = ref<'idle' | 'ok' | 'error'>('idle')
-const detail = ref('')
-
-const statusText = computed(() => {
-  if (state.value === 'ok') return '后端已连通'
-  if (state.value === 'error') return '后端未连通'
-  return '检测中…'
-})
-
-async function check(): Promise<void> {
-  state.value = 'idle'
-  detail.value = ''
+async function load(): Promise<void> {
+  loading.value = true
   try {
-    const res = await api.ping()
-    state.value = 'ok'
-    detail.value = `${res.app} ｜ 服务器时间 ${res.serverTime}`
-  } catch (e) {
-    state.value = 'error'
-    detail.value = e instanceof Error ? e.message : '请求失败'
+    const [catList, hotList, page] = await Promise.all([
+      api.categories().catch(() => []),
+      api.hotActivities(5).catch(() => []),
+      api.activities({ page: 1, size: 5 }).catch(() => ({ records: [], total: 0, page: 1, size: 5 }))
+    ])
+    categories.value = catList
+    hot.value = hotList
+    upcoming.value = page.records
+  } finally {
+    loading.value = false
   }
 }
 
-onShow(() => {
-  check()
+function goDetail(id: number): void {
+  uni.navigateTo({ url: `/pages/activity/detail?id=${id}` })
+}
+
+function goList(categoryId?: number): void {
+  const query = categoryId ? `?categoryId=${categoryId}` : ''
+  uni.navigateTo({ url: `/pages/activity/list${query}` })
+}
+
+onLoad(load)
+onPullDownRefresh(async () => {
+  await load()
+  uni.stopPullDownRefresh()
 })
 </script>
 
 <style scoped>
 .page {
   min-height: 100vh;
-  padding: 24rpx 24rpx 60rpx;
+  padding: 0 24rpx 40rpx;
+  background: #f5f7f8;
 }
 
 .hero {
-  padding: 40rpx 32rpx;
-  border-radius: 24rpx;
-  background: linear-gradient(135deg, #12813f 0%, #22c55e 100%);
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  margin: 0 -24rpx;
+  padding: 32rpx 24rpx 28rpx;
+  background: linear-gradient(140deg, #12813f 0%, #22c55e 60%, #86efac 100%);
+  border-radius: 0 0 32rpx 32rpx;
+  overflow: hidden;
 }
 
-.hero-title {
-  color: #fff;
-  font-size: 44rpx;
-  font-weight: 600;
-}
-
-.hero-sub {
-  margin-top: 10rpx;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 24rpx;
-}
-
-.card {
-  margin-top: 24rpx;
-  padding: 28rpx 32rpx;
-  border-radius: 24rpx;
-  background: #fff;
-  box-shadow: 0 6rpx 20rpx rgba(17, 24, 39, 0.05);
-  display: flex;
-  flex-direction: column;
-}
-
-.card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  margin-bottom: 16rpx;
-}
-
-.retry {
-  color: var(--brand);
-  font-size: 24rpx;
-}
-
-.status {
-  display: flex;
-  align-items: center;
-  padding: 8rpx 0;
-}
-
-.dot {
-  width: 16rpx;
-  height: 16rpx;
+.bubble {
+  position: absolute;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.bubble-1 {
+  width: 220rpx;
+  height: 220rpx;
+  right: -60rpx;
+  top: -80rpx;
+}
+
+.bubble-2 {
+  width: 120rpx;
+  height: 120rpx;
+  right: 90rpx;
+  bottom: -50rpx;
+}
+
+.hero-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.hello {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #fff;
+}
+
+.date {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.slogan {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 25rpx;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-top: 26rpx;
+  padding: 0 24rpx;
+  height: 76rpx;
+  border-radius: 38rpx;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.search-icon {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: #edf9f1;
+  color: #16a34a;
+  font-size: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-text {
+  font-size: 26rpx;
+  color: #9aa0aa;
+}
+
+.cats {
+  white-space: nowrap;
+  margin-top: 20rpx;
+}
+
+.cat-chip {
+  display: inline-block;
+  padding: 12rpx 28rpx;
   margin-right: 14rpx;
-  background: #c9ced6;
+  border-radius: 30rpx;
+  background: #fff;
+  color: #46564e;
+  font-size: 25rpx;
 }
 
-.dot.ok {
+.cat-chip.active {
   background: #16a34a;
-}
-
-.dot.error {
-  background: #e5484d;
-}
-
-.status-text {
-  font-size: 30rpx;
+  color: #fff;
   font-weight: 600;
 }
 
-.detail {
-  margin-top: 8rpx;
-  color: var(--text-sub);
-  font-size: 24rpx;
+.hot {
+  white-space: nowrap;
 }
 
-.hint {
-  margin-top: 14rpx;
-  color: #9aa0aa;
-  font-size: 22rpx;
-  line-height: 1.6;
+.hot-card {
+  display: inline-block;
+  width: 320rpx;
+  margin-right: 20rpx;
+  padding: 16rpx;
+  border-radius: 20rpx;
+  background: #fff;
+  vertical-align: top;
 }
 
-.row {
+.hot-cover {
+  position: relative;
+  height: 180rpx;
+  border-radius: 14rpx;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hot-img {
+  width: 100%;
+  height: 100%;
+}
+
+.hot-text {
+  color: #fff;
+  font-size: 34rpx;
+  font-weight: 600;
+}
+
+.rank {
+  position: absolute;
+  left: 10rpx;
+  top: 10rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 20rpx;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 20rpx;
+}
+
+.rank.top {
+  background: rgba(180, 83, 9, 0.88);
+}
+
+.hot-title {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 27rpx;
+  font-weight: 600;
+  color: #1f2430;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hot-meta {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 14rpx 0;
-  border-bottom: 1rpx solid var(--line);
+  margin-top: 8rpx;
 }
 
-.row:last-child {
-  border-bottom: none;
-}
-
-.row-name {
-  color: var(--text-main);
-  font-size: 26rpx;
-}
-
-.row-desc {
-  flex: 1;
-  margin-left: 20rpx;
-  text-align: right;
-  color: var(--text-sub);
+.hot-time {
   font-size: 22rpx;
+  color: #12813f;
 }
 
-.row-port {
-  color: var(--brand);
-  font-size: 26rpx;
-  font-weight: 600;
+.hot-count {
+  font-size: 22rpx;
+  color: #9aa0aa;
+}
+
+.list {
+  margin-top: 4rpx;
+}
+
+.loading {
+  padding: 30rpx 0;
+  text-align: center;
+  font-size: 24rpx;
+  color: #9aa0aa;
 }
 </style>
