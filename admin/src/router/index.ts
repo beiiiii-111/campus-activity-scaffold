@@ -32,8 +32,20 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/error/404.vue'),
         meta: { title: '页面不存在', public: true }
     },
-    // 还只有登录页，登录成功后先回登录页占位；D04 接布局路由时改成 /dashboard
-    { path: '/', redirect: '/login' },
+    // 布局路由：所有业务页面挂在 children 上，Layout 只负责外壳（侧边栏 + 顶栏）
+    {
+        path: '/',
+        component: () => import('@/layout/index.vue'),
+        redirect: '/dashboard',
+        children: [
+            {
+                path: 'dashboard',
+                name: 'Dashboard',
+                component: () => import('@/views/dashboard/index.vue'),
+                meta: { title: '工作台', roles: ['ADMIN'] }
+            }
+        ]
+    },
     { path: '/:pathMatch(.*)*', redirect: '/404' }
 ]
 

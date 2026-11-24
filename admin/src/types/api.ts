@@ -132,3 +132,27 @@ export interface PingResult {
     serverTime: string
     apiPrefix: string
 }
+
+/** 工作台统计（不含热门活动） */
+export interface DashboardSummary {
+    userTotal: number
+    studentTotal: number
+    activityTotal: number
+    publishedCount: number
+    pendingAuditCount: number
+    signupTotal: number
+    checkinTotal: number
+}
+
+/** 工作台热门活动 */
+export interface DashboardTopActivity {
+    id: number
+    title: string
+    signupCount?: number | null
+    capacity?: number | null
+}
+
+/** 工作台数据：统计 + 热门榜 */
+export interface DashboardData extends DashboardSummary {
+    topActivities: DashboardTopActivity[]
+}

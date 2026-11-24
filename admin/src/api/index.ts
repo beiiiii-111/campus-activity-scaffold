@@ -1,5 +1,5 @@
 import http from './request'
-import type { LoginResult, PingResult } from '@/types/api'
+import type { DashboardData, LoginResult, PingResult } from '@/types/api'
 
 /**
  * 后台接口集合。域名不出现在这里：request.ts 已把 baseURL 固定为 /api。
@@ -12,7 +12,10 @@ export const api = {
     login: (data: { username: string; password: string }) => http.post<LoginResult>('/admin/auth/login', data),
 
     /** 登出：后端把 token 的 jti 拉黑，本地由 store 清 localStorage */
-    logout: () => http.post<void>('/admin/auth/logout')
+    logout: () => http.post<void>('/admin/auth/logout'),
+
+    /** 工作台：统计数字 + 热门活动 TOP5 */
+    dashboard: () => http.get<DashboardData>('/admin/dashboard')
 }
 
 export default api

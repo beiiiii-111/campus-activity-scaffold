@@ -19,3 +19,6 @@ uploads/
 # 系统文件
 .DS_Store
 Thumbs.db
+
+# 本地自查截图，不随代码提交（正式截图放 docs/screenshots）
+screenshots/
