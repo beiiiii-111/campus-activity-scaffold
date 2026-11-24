@@ -167,3 +167,19 @@ export interface AuditParams {
     pass: boolean
     reason?: string
 }
+
+/** 用户列表入参 */
+export interface UserQuery extends PageQuery {
+    keyword?: string
+    /** 空字符串表示不限角色 */
+    role?: UserRole | ''
+}
+
+/** 组织（用户改角色时的下拉数据） */
+export interface Organization {
+    id: number
+    name: string
+    type?: number | null
+    logoUrl?: string | null
+    status?: number | null
+}

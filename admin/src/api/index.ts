@@ -6,9 +6,12 @@ import type {
     AuditParams,
     DashboardData,
     LoginResult,
+    Organization,
     PageQuery,
     PageResult,
-    PingResult
+    PingResult,
+    UserInfo,
+    UserQuery
 } from '@/types/api'
 
 /**
@@ -42,7 +45,17 @@ export const api = {
 
     /** 下架：后端 reason 是 @RequestParam，只能走 query 不能放 body */
     offlineActivity: (id: number | string, reason: string) =>
-        http.post<void>(`/admin/activities/${id}/offline`, null, { params: { reason } })
+        http.post<void>(`/admin/activities/${id}/offline`, null, { params: { reason } }),
+
+    /** 用户分页（可按关键词 / 角色筛选） */
+    userPage: (params: UserQuery) => http.get<PageResult<UserInfo>>('/admin/users', { params }),
+
+    /** 设置用户角色：改成组织者时 orgId 必填，其他角色传 null */
+    setUserRole: (id: number | string, data: { role: string; orgId: number | null }) =>
+        http.post<void>(`/admin/users/${id}/roles`, data),
+
+    /** 组织列表：设置角色弹窗里的下拉数据 */
+    organizations: () => http.get<Organization[]>('/admin/organizations')
 }
 
 export default api
