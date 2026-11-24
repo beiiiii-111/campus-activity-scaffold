@@ -1,4 +1,4 @@
-import type { ApiResult } from '../types'
+import type { ApiResult, UserInfo } from '../types'
 
 /**
  * 请求根地址：H5 走 vite 代理，只写相对路径；小程序没有代理，需要完整地址。
@@ -18,6 +18,21 @@ export function getToken(): string {
 
 export function setToken(token: string): void {
   uni.setStorageSync(TOKEN_KEY, token)
+}
+
+/** 用户信息一并落盘：刷新后 store 初始化直接读，不用先请求 profile */
+export function getStorageUser(): UserInfo | null {
+  const raw = uni.getStorageSync(USER_KEY)
+  if (!raw) return null
+  try {
+    return JSON.parse(raw as string) as UserInfo
+  } catch {
+    return null
+  }
+}
+
+export function setStorageUser(user: UserInfo): void {
+  uni.setStorageSync(USER_KEY, JSON.stringify(user))
 }
 
 export function clearToken(): void {

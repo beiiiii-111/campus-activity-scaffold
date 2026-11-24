@@ -139,6 +139,14 @@ export interface LoginResult {
   user: UserInfo
 }
 
+/** 发送验证码结果：mock 通道且后端 expose-code 打开时 mockCode 有值 */
+export interface SmsSendResult {
+  phone: string
+  expireSeconds: number
+  intervalSeconds: number
+  mockCode?: string | null
+}
+
 /** 探活接口返回，用于联调自检 */
 export interface PingResult {
   app: string

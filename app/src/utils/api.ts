@@ -1,5 +1,15 @@
 import { http } from './request'
-import type { ActivityDetail, ActivityItem, Category, PageResult, PingResult, SignupItem, UserInfo } from '../types'
+import type {
+  ActivityDetail,
+  ActivityItem,
+  Category,
+  LoginResult,
+  PageResult,
+  PingResult,
+  SignupItem,
+  SmsSendResult,
+  UserInfo
+} from '../types'
 
 /**
  * 业务接口集合。写法约定：
@@ -37,5 +47,20 @@ export const api = {
     http.post<SignupItem>(`/app/activities/${id}/signup`, formData ? { formData } : {}),
 
   /** 当前登录用户资料：报名页用来预填姓名、学号，并判断是否已绑定学号 */
-  profile: () => http.get<UserInfo>('/app/user/profile')
+  profile: () => http.get<UserInfo>('/app/user/profile'),
+
+  /** 发送短信验证码：mock 通道会把验证码回传到 mockCode，方便课堂演示 */
+  sendSmsCode: (phone: string) =>
+    http.post<SmsSendResult>('/app/auth/sms/send-code', { phone }, { auth: false }),
+
+  /** 手机号 + 验证码登录，needBind=true 表示还没绑定学号 */
+  smsLogin: (phone: string, code: string) =>
+    http.post<LoginResult>('/app/auth/sms/login', { phone, code }, { auth: false }),
+
+  /** 绑定学号：姓名、学号必填，学院/年级/专业选填 */
+  bind: (data: { studentNo: string; realName: string; college?: string; grade?: string; major?: string }) =>
+    http.post<UserInfo>('/app/auth/bind', data),
+
+  /** 退出登录：后端拉黑 token，本地清 storage */
+  logout: () => http.post<void>('/app/auth/logout', {})
 }
