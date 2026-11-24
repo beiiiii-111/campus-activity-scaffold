@@ -1,5 +1,5 @@
 import { http } from './request'
-import type { ActivityDetail, ActivityItem, Category, PageResult, PingResult } from '../types'
+import type { ActivityDetail, ActivityItem, Category, PageResult, PingResult, SignupItem, UserInfo } from '../types'
 
 /**
  * 业务接口集合。写法约定：
@@ -30,5 +30,12 @@ export const api = {
 
   /** 活动详情 */
   activityDetail: (id: number | string) =>
-    http.get<ActivityDetail>(`/app/activities/${id}`, undefined, { auth: false })
+    http.get<ActivityDetail>(`/app/activities/${id}`, undefined, { auth: false }),
+
+  /** 提交报名：formData 是自定义字段答案的 JSON 字符串，没有自定义表单可不传 */
+  signup: (id: number | string, formData?: string) =>
+    http.post<SignupItem>(`/app/activities/${id}/signup`, formData ? { formData } : {}),
+
+  /** 当前登录用户资料：报名页用来预填姓名、学号，并判断是否已绑定学号 */
+  profile: () => http.get<UserInfo>('/app/user/profile')
 }
