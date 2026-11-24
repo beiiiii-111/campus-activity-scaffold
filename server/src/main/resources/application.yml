@@ -1,0 +1,17 @@
+server:
+  # 作业约定端口，三端文档与截图都以它为准
+  port: 8016
+
+spring:
+  application:
+    name: campus-activity
+  jackson:
+    # 时间统一字符串 + 固定时区，避免前端拿到 UTC 时间
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    # null 字段不下发，前端用可选字段接收
+    default-property-inclusion: non_null
+
+logging:
+  level:
+    top.yixz.activity: debug
