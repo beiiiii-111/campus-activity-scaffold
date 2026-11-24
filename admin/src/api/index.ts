@@ -1,5 +1,15 @@
 import http from './request'
-import type { ActivityDetail, ActivityItem, AuditParams, DashboardData, LoginResult, PageQuery, PageResult, PingResult } from '@/types/api'
+import type {
+    ActivityDetail,
+    ActivityItem,
+    ActivityQuery,
+    AuditParams,
+    DashboardData,
+    LoginResult,
+    PageQuery,
+    PageResult,
+    PingResult
+} from '@/types/api'
 
 /**
  * 后台接口集合。域名不出现在这里：request.ts 已把 baseURL 固定为 /api。
@@ -25,7 +35,14 @@ export const api = {
         http.post<void>(`/admin/activities/${id}/audit`, data),
 
     /** 活动详情：后台与小程序共用 app 端接口，保证字段口径一致 */
-    activityDetail: (id: number | string) => http.get<ActivityDetail>(`/app/activities/${id}`)
+    activityDetail: (id: number | string) => http.get<ActivityDetail>(`/app/activities/${id}`),
+
+    /** 全部活动分页（可按关键词 / 状态筛选） */
+    activityPage: (params: ActivityQuery) => http.get<PageResult<ActivityItem>>('/admin/activities', { params }),
+
+    /** 下架：后端 reason 是 @RequestParam，只能走 query 不能放 body */
+    offlineActivity: (id: number | string, reason: string) =>
+        http.post<void>(`/admin/activities/${id}/offline`, null, { params: { reason } })
 }
 
 export default api

@@ -49,6 +49,12 @@ const routes: RouteRecordRaw[] = [
                 name: 'Audit',
                 component: () => import('@/views/audit/index.vue'),
                 meta: { title: '活动审核', roles: ['ADMIN'] }
+            },
+            {
+                path: 'activity',
+                name: 'Activity',
+                component: () => import('@/views/activity/index.vue'),
+                meta: { title: '活动管理', roles: ['ADMIN'] }
             }
         ]
     },

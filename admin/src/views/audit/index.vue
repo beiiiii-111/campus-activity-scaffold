@@ -103,7 +103,7 @@ async function load(): Promise<void> {
   try {
     const data = await api.auditPage({ page: page.value, size })
     records.value = data.records
-    total.value = data.total
+    total.value = Number(data.total)
   } finally {
     loading.value = false
   }
