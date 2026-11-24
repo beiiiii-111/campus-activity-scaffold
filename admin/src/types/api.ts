@@ -51,6 +51,11 @@ export interface ActivityItem {
     /** 0 表示不限人数 */
     capacity: number
     signedCount: number
+    /** 第二课堂分值类别 1思想成长 2社会实践及志愿服务 3创新创业 4文体活动 */
+    scoreType?: number | null
+    scoreTypeLabel?: string | null
+    /** 签到后可得分值 */
+    score?: number | null
     status: ActivityStatus
     statusLabel: string
     signupOpen: boolean
@@ -155,4 +160,10 @@ export interface DashboardTopActivity {
 /** 工作台数据：统计 + 热门榜 */
 export interface DashboardData extends DashboardSummary {
     topActivities: DashboardTopActivity[]
+}
+
+/** 活动审核入参：pass=true 通过，false 驳回（驳回必须给理由，后端会写进审计日志） */
+export interface AuditParams {
+    pass: boolean
+    reason?: string
 }

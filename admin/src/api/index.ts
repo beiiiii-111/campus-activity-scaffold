@@ -1,5 +1,5 @@
 import http from './request'
-import type { DashboardData, LoginResult, PingResult } from '@/types/api'
+import type { ActivityDetail, ActivityItem, AuditParams, DashboardData, LoginResult, PageQuery, PageResult, PingResult } from '@/types/api'
 
 /**
  * 后台接口集合。域名不出现在这里：request.ts 已把 baseURL 固定为 /api。
@@ -15,7 +15,17 @@ export const api = {
     logout: () => http.post<void>('/admin/auth/logout'),
 
     /** 工作台：统计数字 + 热门活动 TOP5 */
-    dashboard: () => http.get<DashboardData>('/admin/dashboard')
+    dashboard: () => http.get<DashboardData>('/admin/dashboard'),
+
+    /** 待审核活动列表 */
+    auditPage: (params: PageQuery) => http.get<PageResult<ActivityItem>>('/admin/activities/audit-list', { params }),
+
+    /** 审核：pass=true 通过；false 驳回（必须带 reason） */
+    auditActivity: (id: number | string, data: AuditParams) =>
+        http.post<void>(`/admin/activities/${id}/audit`, data),
+
+    /** 活动详情：后台与小程序共用 app 端接口，保证字段口径一致 */
+    activityDetail: (id: number | string) => http.get<ActivityDetail>(`/app/activities/${id}`)
 }
 
 export default api

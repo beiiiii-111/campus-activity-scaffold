@@ -43,6 +43,12 @@ const routes: RouteRecordRaw[] = [
                 name: 'Dashboard',
                 component: () => import('@/views/dashboard/index.vue'),
                 meta: { title: '工作台', roles: ['ADMIN'] }
+            },
+            {
+                path: 'audit',
+                name: 'Audit',
+                component: () => import('@/views/audit/index.vue'),
+                meta: { title: '活动审核', roles: ['ADMIN'] }
             }
         ]
     },
