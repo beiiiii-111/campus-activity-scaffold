@@ -50,6 +50,22 @@ export interface RequestOptions {
   loading?: boolean
 }
 
+/**
+ * 业务错误：把后端的 code 带出来，页面才能按错误码分支处理。
+ * 只抛 Error 的话调用方只能读 message，做不了「名额已满」和「签到码过期」的差异化引导。
+ */
+export interface ApiError extends Error {
+  code?: number
+  status?: number
+}
+
+function bizError(message: string, code?: number, status?: number): ApiError {
+  const error = new Error(message) as ApiError
+  error.code = code
+  error.status = status
+  return error
+}
+
 type QueryParams = Record<string, string | number | boolean | undefined | null>
 
 /** 拆包 + 分支处理：调用方拿到的是 data，不是 { code, message, data } */
@@ -73,25 +89,26 @@ export function request<T>(options: RequestOptions): Promise<T> {
       data: data as string | Record<string, unknown> | ArrayBuffer | undefined,
       header,
       success: (res) => {
+        const body = res.data as ApiResult<T> | undefined
         if (res.statusCode === 401) {
           clearToken()
           uni.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
-          reject(new Error('unauthorized'))
+          reject(bizError('登录已过期，请重新登录', body?.code ?? 10001, 401))
           return
         }
         if (res.statusCode === 403) {
-          uni.showToast({ title: '没有操作权限', icon: 'none' })
-          reject(new Error('forbidden'))
+          // 越权：后端 Security 直接回 403，body 里仍是统一结构（code 10002）
+          uni.showToast({ title: body?.message || '没有操作权限', icon: 'none' })
+          reject(bizError(body?.message || '没有操作权限', body?.code ?? 10002, 403))
           return
         }
-        const body = res.data as ApiResult<T>
         if (body && body.code === 0) {
           resolve(body.data)
           return
         }
         const message = body?.message || '请求失败'
         uni.showToast({ title: message, icon: 'none' })
-        reject(new Error(message))
+        reject(bizError(message, body?.code, res.statusCode))
       },
       fail: (err) => {
         uni.showToast({ title: '网络异常，请检查后端是否启动', icon: 'none' })
@@ -130,4 +147,40 @@ export const http = {
   del<T>(url: string, options: Partial<RequestOptions> = {}): Promise<T> {
     return request<T>({ url, method: 'DELETE', ...options })
   }
+}
+
+/**
+ * 文件上传：uni.request 发不了 multipart，单独走 uni.uploadFile。
+ * 字段名固定 file、bizType 走 query 之外的 formData，与后端 FileController 一致。
+ */
+export function uploadFile(filePath: string, bizType = 'activity-cover'): Promise<string> {
+  const token = getToken()
+  return new Promise<string>((resolve, reject) => {
+    uni.uploadFile({
+      url: `${BASE_URL}/files/upload`,
+      filePath,
+      name: 'file',
+      formData: { bizType },
+      header: token ? { Authorization: `Bearer ${token}` } : {},
+      success: (res) => {
+        let body: ApiResult<{ url: string }> | undefined
+        try {
+          body = JSON.parse(res.data) as ApiResult<{ url: string }>
+        } catch {
+          body = undefined
+        }
+        if (body && body.code === 0 && body.data?.url) {
+          resolve(body.data.url)
+          return
+        }
+        const message = body?.message || '上传失败'
+        uni.showToast({ title: message, icon: 'none' })
+        reject(bizError(message, body?.code, res.statusCode))
+      },
+      fail: () => {
+        uni.showToast({ title: '上传失败，请检查网络', icon: 'none' })
+        reject(bizError('上传失败，请检查网络'))
+      }
+    })
+  })
 }

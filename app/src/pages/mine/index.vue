@@ -38,6 +38,12 @@
         <text class="menu-text">我的报名</text>
         <text class="arrow">›</text>
       </view>
+      <!-- 现场签到入口：签到码由组织者核销台出示，学生粘贴或扫码 -->
+      <view class="menu-item" @click="go('/pages/checkin/scan')">
+        <view class="icon teal">签</view>
+        <text class="menu-text">扫码签到</text>
+        <text class="arrow">›</text>
+      </view>
       <view class="menu-item" @click="go('/pages/mine/messages')">
         <view class="icon orange">消</view>
         <text class="menu-text">消息中心</text>
@@ -257,6 +263,11 @@ onShow(load)
 .icon.blue {
   background: #e8f1fd;
   color: #1d4ed8;
+}
+
+.icon.teal {
+  background: #e6f7f4;
+  color: #0f766e;
 }
 
 .menu-text {

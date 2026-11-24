@@ -167,3 +167,61 @@ export interface PingResult {
   serverTime: string
   apiPrefix: string
 }
+
+/** 扫码签到结果（POST /app/checkin） */
+export interface CheckinResult {
+  success: boolean
+  message: string
+  activityId: number | string
+  activityTitle: string
+  checkinTime: string
+  studentName?: string | null
+}
+
+/** 组织者核销台：动态签到码 + 到场概览（GET /org/activities/{id}/checkin-qr） */
+export interface CheckinQr {
+  activityId: number | string
+  activityTitle: string
+  /** 形如 3010.5876531.9f2c…，每个时间片轮换一次 */
+  token: string
+  /** 轮换周期（秒），前端按它倒计时刷新 */
+  refreshSeconds: number
+  signedCount: number
+  checkedInCount: number
+  recentCheckins: string[]
+}
+
+/** 组织者工作台概览（GET /org/dashboard） */
+export interface OrgDashboard {
+  activityTotal: number | string
+  publishedCount: number | string
+  pendingAuditCount: number | string
+  totalSignup: number | string
+}
+
+/** 组织者看到的报名明细（GET /org/activities/{id}/signups） */
+export interface SignupDetail {
+  id: number | string
+  userId: number | string
+  studentNo?: string | null
+  realName?: string | null
+  college?: string | null
+  grade?: string | null
+  status: SignupStatus
+  statusLabel: string
+  signupNo: string
+  waitlistSeq: number
+  createTime?: string | null
+  checkinTime?: string | null
+}
+
+/** 文件上传结果（POST /files/upload） */
+export interface UploadResult {
+  objectKey: string
+  originalName: string
+  /** 可直接放进 image 的地址 */
+  url: string
+  size: number
+  contentType: string
+  storage: string
+}

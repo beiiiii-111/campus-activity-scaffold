@@ -3,9 +3,13 @@ import type {
   ActivityDetail,
   ActivityItem,
   Category,
+  CheckinQr,
+  CheckinResult,
   LoginResult,
+  OrgDashboard,
   PageResult,
   PingResult,
+  SignupDetail,
   SignupItem,
   SmsSendResult,
   SysNotice,
@@ -80,5 +84,33 @@ export const api = {
   unreadCount: () => http.get<{ count: number }>('/app/messages/unread-count'),
 
   /** 标记已读：ids 为 null 表示全部已读 */
-  markRead: (ids: number[] | null) => http.post<void>('/app/messages/read', { ids })
+  markRead: (ids: number[] | null) => http.post<void>('/app/messages/read', { ids }),
+
+  // ===== 扫码签到（A08）=====
+
+  /**
+   * 扫码签到：token 来自组织者核销台的动态码（形如 3010.5876531.9f2c…）。
+   * checkinType=2 的活动还会校验定位，距离活动地点超过 200 米返回 40005。
+   */
+  checkin: (token: string, latitude?: number, longitude?: number) =>
+    http.post<CheckinResult>('/app/checkin', { token, latitude, longitude }),
+
+  // ===== 组织者工作台（A09）=====
+
+  /** 组织者概览：活动总数、已发布、待审核、累计报名 */
+  orgDashboard: () => http.get<OrgDashboard>('/org/dashboard'),
+
+  /** 我（组织）的活动分页，status 不传表示全部 */
+  orgActivities: (params?: { status?: number; page?: number; size?: number }) =>
+    http.get<PageResult<ActivityItem>>('/org/activities', params),
+
+  /** 动态签到码 + 到场概览，refreshSeconds 到点重新拉一次 */
+  checkinQr: (activityId: number | string) => http.get<CheckinQr>(`/org/activities/${activityId}/checkin-qr`),
+
+  /** 某场活动的报名明细 */
+  orgSignups: (activityId: number | string, params?: { page?: number; size?: number; status?: number }) =>
+    http.get<PageResult<SignupDetail>>(`/org/activities/${activityId}/signups`, params),
+
+  /** 发布活动：后端先落草稿/待审核，title 与 locationName 必填 */
+  createActivity: (data: Record<string, unknown>) => http.post<{ id: number | string }>('/org/activities', data)
 }

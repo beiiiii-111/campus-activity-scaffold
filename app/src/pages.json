@@ -58,6 +58,12 @@
         "navigationBarTitleText": "消息中心",
         "enablePullDownRefresh": true
       }
+    },
+    {
+      "path": "pages/checkin/scan",
+      "style": {
+        "navigationBarTitleText": "扫码签到"
+      }
     }
   ],
   "tabBar": {
