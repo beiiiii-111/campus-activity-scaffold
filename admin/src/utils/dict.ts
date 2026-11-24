@@ -54,7 +54,38 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction | string, string> = {
     CANCEL: '取消',
     DELETE: '删除',
     MANUAL_CHECKIN: '手动补签',
+    REVOKE_CHECKIN: '撤销签到',
     ROLE_CHANGE: '角色变更'
+}
+
+/** 操作日志的业务类型 */
+export const BIZ_TYPE_LABELS: Record<string, string> = {
+    ACTIVITY: '活动',
+    SIGNUP: '报名',
+    CHECKIN: '签到',
+    USER: '用户'
+}
+
+export const BIZ_TYPE_OPTIONS: DictOption<string>[] = [
+    { value: 'ACTIVITY', label: '活动' },
+    { value: 'SIGNUP', label: '报名' },
+    { value: 'CHECKIN', label: '签到' },
+    { value: 'USER', label: '用户' }
+]
+
+export const AUDIT_ACTION_OPTIONS: DictOption<string>[] = [
+    { value: 'APPROVE', label: '通过' },
+    { value: 'REJECT', label: '驳回' },
+    { value: 'CANCEL', label: '取消' },
+    { value: 'DELETE', label: '删除' },
+    { value: 'MANUAL_CHECKIN', label: '手动补签' },
+    { value: 'REVOKE_CHECKIN', label: '撤销签到' },
+    { value: 'ROLE_CHANGE', label: '角色变更' }
+]
+
+export function bizTypeLabel(type?: string | null): string {
+    if (!type) return '-'
+    return BIZ_TYPE_LABELS[type] || type
 }
 
 function toMap<T extends DictOption<number>>(options: T[]): Record<number, T> {

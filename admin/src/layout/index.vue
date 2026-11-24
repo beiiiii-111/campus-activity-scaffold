@@ -53,22 +53,33 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowDown, CircleCheck, Files, Odometer, UserFilled } from '@element-plus/icons-vue'
+import { ArrowDown, CircleCheck, Document, Files, Odometer, UserFilled } from '@element-plus/icons-vue'
 import api from '@/api'
 import { useUserStore } from '@/stores/user'
 import { roleLabel } from '@/utils/dict'
+import type { UserRole } from '@/types/api'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
-/** 菜单与路由表同源：path 必须和 router/index.ts 里 children 的 path 一致 */
-const menus = [
-  { path: '/dashboard', title: '工作台', icon: Odometer },
-  { path: '/audit', title: '活动审核', icon: CircleCheck },
-  { path: '/activity', title: '活动管理', icon: Files },
-  { path: '/user', title: '用户管理', icon: UserFilled }
+/**
+ * 菜单与路由表同源：path 必须和 router/index.ts 里 children 的 path 一致。
+ * roles 与路由 meta.roles 保持一样，页面上「看不到入口」和「手输 URL 被拦」两件事才对得上。
+ */
+const allMenus = [
+  { path: '/dashboard', title: '工作台', icon: Odometer, roles: ['ADMIN', 'REVIEWER'] },
+  { path: '/audit', title: '活动审核', icon: CircleCheck, roles: ['ADMIN', 'REVIEWER'] },
+  { path: '/activity', title: '活动管理', icon: Files, roles: ['ADMIN', 'REVIEWER'] },
+  { path: '/user', title: '用户管理', icon: UserFilled, roles: ['ADMIN'] },
+  { path: '/log', title: '操作日志', icon: Document, roles: ['ADMIN'] }
 ]
+
+/** 菜单级权限：按当前角色过滤，审核员看不到「用户管理 / 操作日志」 */
+const menus = computed(() => {
+  const role = userStore.role as UserRole | undefined
+  return allMenus.filter((item) => !role || item.roles.includes(role))
+})
 
 const currentTitle = computed(() => (route.meta.title as string | undefined) || '工作台')
 const avatarText = computed(() => userStore.nickname.slice(0, 1))

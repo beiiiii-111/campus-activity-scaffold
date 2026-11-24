@@ -3,6 +3,7 @@ import type {
     ActivityDetail,
     ActivityItem,
     ActivityQuery,
+    AuditLogItem,
     AuditParams,
     DashboardData,
     LoginResult,
@@ -55,7 +56,13 @@ export const api = {
         http.post<void>(`/admin/users/${id}/roles`, data),
 
     /** 组织列表：设置角色弹窗里的下拉数据 */
-    organizations: () => http.get<Organization[]>('/admin/organizations')
+    organizations: () => http.get<Organization[]>('/admin/organizations'),
+
+    /**
+     * 操作日志：后端 /admin/logs 只接受 page/size（无筛选参数），
+     * 业务类型与动作的筛选在前端做，见 views/log/index.vue 的 filtered 计算属性。
+     */
+    logs: (params: PageQuery) => http.get<PageResult<AuditLogItem>>('/admin/logs', { params })
 }
 
 export default api

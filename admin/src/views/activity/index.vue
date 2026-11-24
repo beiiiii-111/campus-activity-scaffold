@@ -54,7 +54,8 @@
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click.stop="openDetail(row)">详情</el-button>
-            <el-button v-if="canOffline(row)" link type="danger" @click.stop="offline(row)">下架</el-button>
+            <!-- 按钮级权限：只有 ADMIN 能下架，REVIEWER 能看到列表但看不到这个按钮 -->
+            <el-button v-perm="['ADMIN']" v-if="canOffline(row)" link type="danger" @click.stop="offline(row)">下架</el-button>
             <span v-else class="sub">—</span>
           </template>
         </el-table-column>

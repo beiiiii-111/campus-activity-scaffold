@@ -28,7 +28,7 @@ export type SignupStatus = 0 | 1 | 2 | 3 | 4 | 5 | 6
 export type UserRole = 'STUDENT' | 'ORGANIZER' | 'REVIEWER' | 'ADMIN'
 
 /** 审计动作 */
-export type AuditAction = 'APPROVE' | 'REJECT' | 'CANCEL' | 'DELETE' | 'MANUAL_CHECKIN' | 'ROLE_CHANGE'
+export type AuditAction = 'APPROVE' | 'REJECT' | 'CANCEL' | 'DELETE' | 'MANUAL_CHECKIN' | 'REVOKE_CHECKIN' | 'ROLE_CHANGE'
 
 /** Element Plus 标签类型 */
 export type TagType = 'primary' | 'success' | 'info' | 'warning' | 'danger'
@@ -182,4 +182,23 @@ export interface Organization {
     type?: number | null
     logoUrl?: string | null
     status?: number | null
+}
+
+/**
+ * 操作日志（audit_record 表）。
+ * 审核、下架、补签、撤销签到、改角色都会落一条，字段与后端实体同名。
+ */
+export interface AuditLogItem {
+    id: number | string
+    /** ACTIVITY / SIGNUP / CHECKIN / USER */
+    bizType: string
+    bizId: number | string
+    /** APPROVE / REJECT / CANCEL / MANUAL_CHECKIN / REVOKE_CHECKIN / ROLE_CHANGE */
+    action: string
+    operatorId: number | string
+    operatorName?: string | null
+    beforeStatus?: string | null
+    afterStatus?: string | null
+    remark?: string | null
+    createTime: string
 }

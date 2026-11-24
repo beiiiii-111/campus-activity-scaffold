@@ -42,25 +42,32 @@ const routes: RouteRecordRaw[] = [
                 path: 'dashboard',
                 name: 'Dashboard',
                 component: () => import('@/views/dashboard/index.vue'),
-                meta: { title: '工作台', roles: ['ADMIN'] }
+                meta: { title: '工作台', roles: ['ADMIN', 'REVIEWER'] }
             },
             {
                 path: 'audit',
                 name: 'Audit',
                 component: () => import('@/views/audit/index.vue'),
-                meta: { title: '活动审核', roles: ['ADMIN'] }
+                meta: { title: '活动审核', roles: ['ADMIN', 'REVIEWER'] }
             },
             {
                 path: 'activity',
                 name: 'Activity',
                 component: () => import('@/views/activity/index.vue'),
-                meta: { title: '活动管理', roles: ['ADMIN'] }
+                meta: { title: '活动管理', roles: ['ADMIN', 'REVIEWER'] }
             },
             {
                 path: 'user',
                 name: 'User',
                 component: () => import('@/views/user/index.vue'),
+                // 用户管理只给 ADMIN：审核员手输 #/user 会被守卫送 403，后端同样拦一道
                 meta: { title: '用户管理', roles: ['ADMIN'] }
+            },
+            {
+                path: 'log',
+                name: 'Log',
+                component: () => import('@/views/log/index.vue'),
+                meta: { title: '操作日志', roles: ['ADMIN'] }
             }
         ]
     },
