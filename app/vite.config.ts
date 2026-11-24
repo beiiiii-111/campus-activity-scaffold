@@ -12,6 +12,11 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:8016',
         changeOrigin: true
+      },
+      // 上传后的封面走 /uploads/** 静态映射，H5 调试同样要代理，否则缩略图 404
+      '/uploads': {
+        target: 'http://127.0.0.1:8016',
+        changeOrigin: true
       }
     }
   }

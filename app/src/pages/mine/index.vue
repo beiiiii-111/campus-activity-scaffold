@@ -44,6 +44,12 @@
         <text class="menu-text">扫码签到</text>
         <text class="arrow">›</text>
       </view>
+      <!-- 只有 ORGANIZER 才看得到这个入口；学生手输 URL 进去会被后端 403 拦住 -->
+      <view v-if="isOrganizer" class="menu-item" @click="go('/pages/org/workbench')">
+        <view class="icon orange">台</view>
+        <text class="menu-text">组织者工作台</text>
+        <text class="arrow">›</text>
+      </view>
       <view class="menu-item" @click="go('/pages/mine/messages')">
         <view class="icon orange">消</view>
         <text class="menu-text">消息中心</text>
@@ -74,6 +80,7 @@ const signupTotal = ref(0)
 const unread = ref(0)
 
 const user = computed<UserInfo>(() => store.user || ({} as UserInfo))
+const isOrganizer = computed(() => store.user?.role === 'ORGANIZER')
 
 async function load(): Promise<void> {
   if (!store.isLogin) {

@@ -64,6 +64,19 @@
       "style": {
         "navigationBarTitleText": "扫码签到"
       }
+    },
+    {
+      "path": "pages/org/workbench",
+      "style": {
+        "navigationBarTitleText": "组织者工作台",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/org/publish",
+      "style": {
+        "navigationBarTitleText": "发布活动"
+      }
     }
   ],
   "tabBar": {
