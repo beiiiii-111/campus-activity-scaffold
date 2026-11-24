@@ -147,6 +147,20 @@ export interface SmsSendResult {
   mockCode?: string | null
 }
 
+/** 站内消息（消息中心列表项） */
+export interface SysNotice {
+  id: number
+  /** 消息类型：SIGNUP / AUDIT / CHECKIN … */
+  type: string
+  title: string
+  content?: string | null
+  /** 关联业务 ID，点进去可以跳对应页面 */
+  bizId?: number | null
+  /** 0 未读 1 已读 */
+  readFlag: number
+  createTime: string
+}
+
 /** 探活接口返回，用于联调自检 */
 export interface PingResult {
   app: string

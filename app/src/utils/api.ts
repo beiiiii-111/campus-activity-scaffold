@@ -8,6 +8,7 @@ import type {
   PingResult,
   SignupItem,
   SmsSendResult,
+  SysNotice,
   UserInfo
 } from '../types'
 
@@ -62,5 +63,22 @@ export const api = {
     http.post<UserInfo>('/app/auth/bind', data),
 
   /** 退出登录：后端拉黑 token，本地清 storage */
-  logout: () => http.post<void>('/app/auth/logout', {})
+  logout: () => http.post<void>('/app/auth/logout', {}),
+
+  /** 我的报名分页，status 不传表示全部 */
+  mySignups: (params?: { page?: number; size?: number; status?: number }) =>
+    http.get<PageResult<SignupItem>>('/app/signups', params),
+
+  /** 取消报名：只有 canCancel=true 的报名才允许 */
+  cancelSignup: (id: number | string) => http.post<void>(`/app/signups/${id}/cancel`, {}),
+
+  /** 消息中心分页 */
+  messages: (params?: { page?: number; size?: number }) =>
+    http.get<PageResult<SysNotice>>('/app/messages', params),
+
+  /** 未读消息数：我的页小红点用 */
+  unreadCount: () => http.get<{ count: number }>('/app/messages/unread-count'),
+
+  /** 标记已读：ids 为 null 表示全部已读 */
+  markRead: (ids: number[] | null) => http.post<void>('/app/messages/read', { ids })
 }

@@ -38,6 +38,26 @@
       "style": {
         "navigationBarTitleText": "绑定学号"
       }
+    },
+    {
+      "path": "pages/mine/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/mine/signups",
+      "style": {
+        "navigationBarTitleText": "我的报名",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/mine/messages",
+      "style": {
+        "navigationBarTitleText": "消息中心",
+        "enablePullDownRefresh": true
+      }
     }
   ],
   "tabBar": {
@@ -53,6 +73,10 @@
       {
         "pagePath": "pages/activity/list",
         "text": "活动"
+      },
+      {
+        "pagePath": "pages/mine/index",
+        "text": "我的"
       }
     ]
   },
